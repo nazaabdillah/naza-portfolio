@@ -8,21 +8,21 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "15.3.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
     "@supabase/supabase-js": "^2.49.4",
-    "next-mdx-remote": "^5.0.0",
     "gray-matter": "^4.0.3",
-    "jose": "^5.9.6"
+    "jose": "^5.9.6",
+    "next": "^16.2.4",
+    "next-mdx-remote": "^5.0.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10",
     "postcss": "^8",
-    "autoprefixer": "^10"
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
 }
