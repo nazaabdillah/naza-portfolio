@@ -1,0 +1,40 @@
+---
+title: "Deploy Golang ke Railway Tanpa Kartu Kredit"
+date: "2026-04-28"
+category: "Tech"
+tags: ["golang", "railway", "deployment", "backend"]
+excerpt: "Pengalaman deploy backend Golang ke Railway dari nol — termasuk error yang bikin pusing dan solusinya."
+---
+
+## Latar Belakang
+
+Waktu lagi develop REPD App, gue butuh deploy backend Golang ke cloud secara gratis. Masalahnya hampir semua platform gratis sekarang minta kartu kredit buat verifikasi.
+
+## Error Pertama: .env File
+
+Error yang muncul pas deploy ke Railway:
+
+```
+2026/04/28 02:25:09 Error loading .env file
+```
+
+Ternyata masalahnya simpel — `log.Fatal` di `main.go` bikin app langsung mati kalau file `.env` gak ketemu. Di Railway, env variables diinject langsung oleh platform, bukan dari file.
+
+## Solusinya
+
+Ganti `log.Fatal` ke `log.Println`:
+
+```go
+err := godotenv.Load()
+if err != nil {
+    log.Println("No .env file, using environment variables")
+}
+```
+
+## Hasil
+
+Backend Golang live di Railway dalam 30 menit. Gratis dengan $5 credit awal.
+
+## Kesimpulan
+
+Railway masih jadi pilihan terbaik buat deploy Golang gratis. Coba aja dulu, jangan overthinking soal platform sebelum codenya jalan.
