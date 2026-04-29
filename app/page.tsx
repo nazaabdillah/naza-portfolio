@@ -52,7 +52,7 @@ export default async function Home() {
               <img 
                 src="https://api.dicebear.com/9.x/notionists/svg?seed=developer&backgroundColor=0047FF" 
                 alt="Naza" 
-                className="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-out" 
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out" 
               />
               <div className="absolute bottom-0 left-0 right-0 bg-black p-2 border-t-[3px] border-black flex justify-between items-center">
                 <span className="font-mono text-[9px] text-white tracking-widest uppercase font-bold">@nazaabdillah</span>

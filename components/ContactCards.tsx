@@ -1,23 +1,66 @@
 'use client'
 
 const contacts = [
-  { label:'GitHub', sub:'Source code & projects', val:'@nazaabdillah', url:'https://github.com/nazaabdillah', bg:'#0a0a0a', color:'#fff' },
-  { label:'Email', sub:'Buat kolaborasi atau ngobrolin project', val:'naza@email.com', url:'mailto:inazaproject@email.com', bg:'#0047FF', color:'#fff' },
-  { label:'LinkedIn', sub:'Professional network', val:'Naza Abdillah', url:'www.linkedin.com/in/qori-naza-abdillah-a42045290', bg:'#fff', color:'#0a0a0a' },
+  { 
+    label: 'GitHub', 
+    sub: 'Source code & system repositories', 
+    val: '@nazaabdillah', 
+    url: 'https://github.com/nazaabdillah', 
+    bg: 'bg-black', 
+    text: 'text-white' 
+  },
+  { 
+    label: 'Email', 
+    sub: 'Direct line for collaborations', 
+    val: 'naza@email.com', 
+    url: 'mailto:naza@email.com', 
+    bg: 'bg-[#0047FF]', 
+    text: 'text-white' 
+  },
+  { 
+    label: 'LinkedIn', 
+    sub: 'Professional identity & network', 
+    val: 'Naza Abdillah', 
+    url: 'https://www.linkedin.com/in/qori-naza-abdillah-a42045290', 
+    bg: 'bg-white', 
+    text: 'text-black' 
+  },
 ]
 
 export default function ContactCards() {
   return (
-    <section style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', borderBottom:'2.5px solid #0a0a0a' }}>
-      {contacts.map((c,i) => (
-        <a key={c.label} href={c.url} target="_blank" rel="noopener noreferrer"
-          style={{ padding:'2.5rem 2rem', background:c.bg, color:c.color, borderRight:i<contacts.length-1?'2.5px solid #0a0a0a':'none', textDecoration:'none', display:'block', transition:'all .12s' }}
-          onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform='translate(-4px,-4px)';el.style.boxShadow='6px 6px 0 #0a0a0a'}}
-          onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform='none';el.style.boxShadow='none'}}
+    <section className="grid grid-cols-1 md:grid-cols-3 border-b-[3px] border-black overflow-hidden bg-black gap-[3px]">
+      {contacts.map((c) => (
+        <a 
+          key={c.label} 
+          href={c.url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className={`group relative p-10 md:p-14 ${c.bg} ${c.text} flex flex-col justify-between transition-all duration-300 hover:z-10`}
         >
-          <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'2px', opacity:.7, marginBottom:'8px' }}>{c.label}</p>
-          <p style={{ fontSize:'11px', opacity:.6, marginBottom:'1rem', lineHeight:1.5 }}>{c.sub}</p>
-          <p style={{ fontFamily:'Bebas Neue, sans-serif', fontSize:'22px', letterSpacing:'1px' }}>{c.val}</p>
+          {/* Visual Highlight Overlay */}
+          <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+
+          <div className="relative z-10">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] mb-4 opacity-70 group-hover:opacity-100 transition-opacity">
+              // {c.label}
+            </p>
+            <p className="font-mono text-xs md:text-sm opacity-60 mb-8 leading-relaxed group-hover:opacity-100 transition-opacity">
+              {c.sub}
+            </p>
+          </div>
+
+          <div className="relative z-10 flex items-end justify-between">
+            <p className="font-display text-2xl md:text-3xl uppercase tracking-wider group-hover:translate-x-2 transition-transform duration-300">
+              {c.val}
+            </p>
+            <span className="font-mono text-xl group-hover:-translate-y-2 group-hover:translate-x-2 transition-transform duration-300">
+              ↗
+            </span>
+          </div>
+
+          {/* Hover Shadow Effect (Neobrutalist Style) */}
+          <div className="absolute inset-0 border-[3px] border-transparent group-hover:border-black transition-all"></div>
         </a>
       ))}
     </section>
