@@ -13,34 +13,72 @@ const links = [
 
 export default function Navbar() {
   const pathname = usePathname()
-  const [hover, setHover] = useState<string|null>(null)
+  // useState cuma dipakai buat buka-tutup menu di HP, bukan buat hover
+  const [isOpen, setIsOpen] = useState(false) 
 
   return (
-    <nav style={{ background:'#fff', borderBottom:'2.5px solid #0a0a0a', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 2rem', height:'58px', position:'sticky', top:0, zIndex:100 }}>
-      <Link href="/" style={{ fontFamily:'Bebas Neue, sans-serif', fontSize:'26px', letterSpacing:'2px', color:'#0a0a0a' }}>
-        NAZA<span style={{color:'#0047FF'}}>.</span>DEV
-      </Link>
-      <div style={{ display:'flex', height:'100%', alignItems:'stretch' }}>
-        {links.map(l => {
-          const active = pathname === l.href
-          const hov = hover === l.href
-          return (
-            <Link key={l.href} href={l.href}
-              onMouseEnter={() => setHover(l.href)}
-              onMouseLeave={() => setHover(null)}
-              style={{
-                display:'flex', alignItems:'center',
-                padding:'0 18px',
-                fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1.5px',
-                borderLeft:'2.5px solid #0a0a0a',
-                background: active||hov ? '#0047FF' : 'transparent',
-                color: active||hov ? '#fff' : '#0a0a0a',
-                transition:'all .1s',
-              }}
-            >{l.label}</Link>
-          )
-        })}
+    <nav className="bg-white border-b-[3px] border-black sticky top-0 z-50">
+      <div className="flex items-center justify-between h-14 md:h-16">
+        
+        {/* LOGO */}
+        <Link 
+          href="/" 
+          className="font-display text-2xl md:text-3xl font-bold tracking-widest text-black px-5 md:px-6 flex items-center h-full border-r-[3px] border-transparent md:border-black hover:opacity-80 transition-opacity"
+        >
+          NAZA<span className="text-[#0047FF]">.</span>DEV
+        </Link>
+
+        {/* DESKTOP MENU (Hidden on Mobile) */}
+        <div className="hidden md:flex h-full items-stretch">
+          {links.map(l => {
+            const active = pathname === l.href
+            return (
+              <Link 
+                key={l.href} 
+                href={l.href}
+                className={`font-mono flex items-center px-6 text-xs font-bold uppercase tracking-widest border-l-[3px] border-black transition-colors ${
+                  active 
+                    ? 'bg-[#0047FF] text-white' 
+                    : 'bg-transparent text-black hover:bg-[#0047FF] hover:text-white'
+                }`}
+              >
+                {l.label}
+              </Link>
+            )
+          })}
+        </div>
+
+        {/* MOBILE MENU TOGGLE (Visible only on Mobile) */}
+        <button 
+          className="md:hidden font-mono text-xs font-bold uppercase px-5 h-full border-l-[3px] border-black hover:bg-[#0047FF] hover:text-white transition-colors"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? 'CLOSE' : 'MENU'}
+        </button>
       </div>
+
+      {/* MOBILE DROPDOWN */}
+      {isOpen && (
+        <div className="md:hidden flex flex-col border-t-[3px] border-black bg-white animate-fade-up">
+          {links.map(l => {
+            const active = pathname === l.href
+            return (
+              <Link 
+                key={l.href} 
+                href={l.href}
+                onClick={() => setIsOpen(false)}
+                className={`font-mono block px-5 py-4 text-xs font-bold uppercase tracking-widest border-b-[3px] border-black last:border-b-0 transition-colors ${
+                  active 
+                    ? 'bg-[#0047FF] text-white' 
+                    : 'bg-transparent text-black hover:bg-[#0047FF] hover:text-white'
+                }`}
+              >
+                {l.label}
+              </Link>
+            )
+          })}
+        </div>
+      )}
     </nav>
   )
 }

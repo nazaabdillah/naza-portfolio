@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 type Project = { id: string; title: string; description: string; tags: string[]; url: string }
 
@@ -16,142 +17,232 @@ export default function Dashboard() {
   useEffect(() => { fetchProjects() }, [])
 
   async function fetchProjects() {
-    const res = await fetch('/api/projects')
-    const data = await res.json()
-    if (res.ok) setProjects(data)
-    setLoading(false)
+    try {
+      const res = await fetch('/api/projects')
+      const data = await res.json()
+      if (res.ok) setProjects(data)
+    } catch (error) {
+      console.error("Failed to fetch projects")
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function addProject(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
-    const res = await fetch('/api/projects', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ ...form, tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean) })
-    })
-    if (res.ok) {
-      setMsg('✓ Project berhasil ditambahkan')
-      setForm({ title:'', description:'', tags:'', url:'' })
-      fetchProjects()
-    } else {
-      setMsg('✗ Gagal menyimpan project')
+    try {
+      const res = await fetch('/api/projects', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ ...form, tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean) })
+      })
+      if (res.ok) {
+        setMsg('✓ System Updated: Project Added')
+        setForm({ title:'', description:'', tags:'', url:'' })
+        fetchProjects()
+      } else {
+        setMsg('✗ Error: Failed to save project')
+      }
+    } catch (error) {
+      setMsg('✗ Network Error')
+    } finally {
+      setSaving(false)
+      setTimeout(() => setMsg(''), 3000)
     }
-    setSaving(false)
-    setTimeout(()=>setMsg(''), 3000)
   }
 
   async function deleteProject(id: string) {
-    if (!confirm('Hapus project ini?')) return
-    await fetch(`/api/projects?id=${id}`, { method:'DELETE' })
-    fetchProjects()
+    if (!confirm('WARNING: Are you sure you want to delete this record?')) return
+    try {
+      await fetch(`/api/projects?id=${id}`, { method:'DELETE' })
+      fetchProjects()
+    } catch (error) {
+      alert("Failed to delete project")
+    }
   }
 
-  const Label = ({children}:{children:string}) => (
-    <label style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1.5px', display:'block', marginBottom:'6px' }}>{children}</label>
-  )
-
-  const Input = ({placeholder, value, onChange}:{placeholder:string,value:string,onChange:(v:string)=>void}) => (
-    <input placeholder={placeholder} value={value} onChange={e=>onChange(e.target.value)}
-      style={{ width:'100%', padding:'10px 14px', border:'2.5px solid #0a0a0a', fontSize:'14px', fontFamily:'Space Grotesk, sans-serif', outline:'none', marginBottom:'1rem' }}
-    />
-  )
-
   return (
-    <div style={{ minHeight:'100vh', background:'#fff' }}>
-      {/* Header */}
-      <div style={{ borderBottom:'2.5px solid #0a0a0a', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 2rem', height:'58px' }}>
-        <span style={{ fontFamily:'Bebas Neue, sans-serif', fontSize:'24px', letterSpacing:'2px' }}>ADMIN<span style={{color:'#0047FF'}}>.</span>PANEL</span>
-        <div style={{ display:'flex', gap:'0' }}>
-          {(['projects','blog'] as const).map(t => (
-            <button key={t} onClick={()=>setTab(t)} style={{
-              padding:'8px 18px', border:'2px solid #0a0a0a', borderRight:t==='projects'?'none':'2px solid #0a0a0a',
-              background:tab===t?'#0047FF':'transparent', color:tab===t?'#fff':'#0a0a0a',
-              fontFamily:'JetBrains Mono, monospace', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px',
-            }}>{t}</button>
-          ))}
-          <button onClick={()=>router.push('/')} style={{ padding:'8px 18px', border:'2px solid #0a0a0a', borderLeft:'none', background:'transparent', fontFamily:'JetBrains Mono, monospace', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px' }}>← Site</button>
+    <div className="min-h-screen flex flex-col bg-gray-50 text-black font-sans selection:bg-[#0047FF] selection:text-white">
+      
+      {/* HEADER / TOPBAR */}
+      <header className="bg-white border-b-[3px] border-black flex flex-col sm:flex-row items-center justify-between px-6 py-4 sticky top-0 z-50">
+        <div className="flex items-center gap-4 mb-4 sm:mb-0 w-full sm:w-auto justify-between">
+          <span className="font-display text-2xl md:text-3xl uppercase tracking-widest">
+            Control<span className="text-[#0047FF]">.</span>Panel
+          </span>
+          <Link href="/" className="sm:hidden font-mono text-[10px] font-bold uppercase tracking-widest border-[2px] border-black px-3 py-1 hover:bg-black hover:text-white transition-colors">
+            Exit
+          </Link>
         </div>
-      </div>
+        
+        <div className="flex w-full sm:w-auto border-[3px] border-black bg-white shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+          {(['projects','blog'] as const).map(t => (
+            <button 
+              key={t} 
+              onClick={() => setTab(t)} 
+              className={`flex-1 sm:flex-none px-6 py-2 font-mono text-[10px] md:text-xs font-bold uppercase tracking-widest transition-colors ${
+                tab === t 
+                  ? 'bg-[#0047FF] text-white border-r-[3px] border-black last:border-r-0' 
+                  : 'bg-transparent text-black border-r-[3px] border-black last:border-r-0 hover:bg-gray-100'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+          <Link 
+            href="/" 
+            className="hidden sm:flex px-6 py-2 font-mono text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-colors items-center"
+          >
+            Exit →
+          </Link>
+        </div>
+      </header>
 
-      <div style={{ display:'grid', gridTemplateColumns:'380px 1fr', minHeight:'calc(100vh - 58px)' }}>
-        {/* FORM */}
-        <div style={{ borderRight:'2.5px solid #0a0a0a', padding:'2rem' }}>
+      {/* MAIN DASHBOARD GRID */}
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 opacity-0 animate-fade-up">
+        
+        {/* LEFT COLUMN: CONTROLS & FORMS (4 Columns) */}
+        <div className="lg:col-span-4 border-b-[3px] lg:border-b-0 lg:border-r-[3px] border-black bg-white p-6 md:p-8">
+          
           {tab === 'projects' ? (
-            <>
-              <h2 style={{ fontFamily:'Bebas Neue, sans-serif', fontSize:'24px', letterSpacing:'1px', marginBottom:'1.5rem' }}>ADD PROJECT</h2>
-              <form onSubmit={addProject}>
-                <Label>Title</Label>
-                <Input placeholder="REPD App" value={form.title} onChange={v=>setForm(f=>({...f,title:v}))} />
-                <Label>Description</Label>
-                <textarea value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))}
-                  placeholder="Deskripsi singkat project..."
-                  style={{ width:'100%', padding:'10px 14px', border:'2.5px solid #0a0a0a', fontSize:'14px', fontFamily:'Space Grotesk, sans-serif', outline:'none', marginBottom:'1rem', minHeight:'100px', resize:'vertical' }}
-                />
-                <Label>Tags (pisah koma)</Label>
-                <Input placeholder="Golang, Next.js, Supabase" value={form.tags} onChange={v=>setForm(f=>({...f,tags:v}))} />
-                <Label>URL</Label>
-                <Input placeholder="https://github.com/..." value={form.url} onChange={v=>setForm(f=>({...f,url:v}))} />
-                {msg && <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'12px', color: msg.startsWith('✓')?'green':'red', marginBottom:'1rem', fontWeight:700 }}>{msg}</p>}
-                <button type="submit" disabled={saving} style={{ width:'100%', padding:'12px', background:saving?'#999':'#0047FF', color:'#fff', border:'2.5px solid #0a0a0a', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1.5px', fontFamily:'Space Grotesk, sans-serif' }}>
-                  {saving ? 'Saving...' : 'Add Project →'}
+            <div className="animate-fade-up">
+              <div className="font-mono text-[#0047FF] text-[10px] font-bold tracking-[0.3em] uppercase mb-2">
+                // Database Write
+              </div>
+              <h2 className="font-display text-3xl uppercase tracking-tight mb-6">Add Project</h2>
+              
+              <form onSubmit={addProject} className="flex flex-col gap-4">
+                <div>
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-widest block mb-2">Title</label>
+                  <input placeholder="e.g. Workflow Engine" value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} required
+                    className="w-full px-4 py-3 border-[3px] border-black font-mono text-sm outline-none focus:border-[#0047FF] focus:bg-gray-50 transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-widest block mb-2">Description</label>
+                  <textarea placeholder="Brief system overview..." value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} required
+                    className="w-full px-4 py-3 border-[3px] border-black font-mono text-sm outline-none focus:border-[#0047FF] focus:bg-gray-50 transition-colors min-h-[120px] resize-y"
+                  />
+                </div>
+                
+                <div>
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-widest block mb-2">Tags (Comma Separated)</label>
+                  <input placeholder="Golang, Postgres, API" value={form.tags} onChange={e=>setForm(f=>({...f,tags:e.target.value}))} required
+                    className="w-full px-4 py-3 border-[3px] border-black font-mono text-sm outline-none focus:border-[#0047FF] focus:bg-gray-50 transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-widest block mb-2">Target URL</label>
+                  <input placeholder="https://github.com/..." value={form.url} onChange={e=>setForm(f=>({...f,url:e.target.value}))}
+                    className="w-full px-4 py-3 border-[3px] border-black font-mono text-sm outline-none focus:border-[#0047FF] focus:bg-gray-50 transition-colors"
+                  />
+                </div>
+
+                {msg && (
+                  <div className={`p-3 border-[3px] font-mono text-[10px] font-bold uppercase tracking-widest ${msg.includes('✓') ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700'}`}>
+                    {msg}
+                  </div>
+                )}
+
+                <button type="submit" disabled={saving} 
+                  className={`mt-2 w-full px-6 py-4 border-[3px] border-black font-mono text-xs font-bold uppercase tracking-widest transition-all ${saving ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-[#0047FF] hover:shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:-translate-y-1'}`}
+                >
+                  {saving ? 'Executing...' : 'Deploy Record →'}
                 </button>
               </form>
-            </>
+            </div>
           ) : (
-            <div>
-              <h2 style={{ fontFamily:'Bebas Neue, sans-serif', fontSize:'24px', letterSpacing:'1px', marginBottom:'1rem' }}>BLOG POSTS</h2>
-              <div style={{ padding:'1.25rem', border:'2.5px solid #0047FF', background:'#f0f4ff' }}>
-                <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', color:'#0047FF', marginBottom:'8px' }}>How to add posts</p>
-                <p style={{ fontSize:'13px', color:'#555', lineHeight:1.7 }}>
-                  Buat file <code style={{background:'#dde5ff',padding:'1px 5px'}}>nama-artikel.mdx</code> di folder <code style={{background:'#dde5ff',padding:'1px 5px'}}>content/blog/</code>, lalu push ke GitHub. Vercel akan auto-deploy.
+            <div className="animate-fade-up">
+              <div className="font-mono text-[#0047FF] text-[10px] font-bold tracking-[0.3em] uppercase mb-2">
+                // Instructions
+              </div>
+              <h2 className="font-display text-3xl uppercase tracking-tight mb-6">Blog Sync</h2>
+              
+              <div className="border-[3px] border-[#0047FF] bg-blue-50 p-6">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#0047FF] mb-4 border-b-[2px] border-[#0047FF] pb-2">
+                  Deployment Pipeline
+                </p>
+                <p className="font-mono text-xs text-gray-700 leading-relaxed">
+                  System reads directly from the repository.
+                  <br/><br/>
+                  Create an <code className="bg-white border-[2px] border-black px-1.5 py-0.5 text-black">.mdx</code> file in the <code className="bg-white border-[2px] border-black px-1.5 py-0.5 text-black">content/blog/</code> directory. Push to remote origin. Vercel will trigger automatic rebuild.
                 </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* LIST */}
-        <div style={{ padding:'2rem' }}>
+        {/* RIGHT COLUMN: DATA LIST (8 Columns) */}
+        <div className="lg:col-span-8 p-6 md:p-8">
+          
           {tab === 'projects' && (
-            <>
-              <h2 style={{ fontFamily:'Bebas Neue, sans-serif', fontSize:'24px', letterSpacing:'1px', marginBottom:'1.5rem' }}>ALL PROJECTS ({projects.length})</h2>
+            <div className="animate-fade-up-1">
+              <div className="flex justify-between items-end mb-6 border-b-[3px] border-black pb-4">
+                <div>
+                  <div className="font-mono text-gray-500 text-[10px] font-bold tracking-[0.3em] uppercase mb-2">
+                    // Database Read
+                  </div>
+                  <h2 className="font-display text-3xl uppercase tracking-tight">Active Systems</h2>
+                </div>
+                <span className="font-mono text-xs font-bold bg-black text-white px-3 py-1">
+                  TOTAL: {projects.length}
+                </span>
+              </div>
+
               {loading ? (
-                <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'12px', color:'#999' }}>Loading...</p>
+                <div className="flex gap-2 items-center text-[#0047FF] font-mono text-xs font-bold uppercase tracking-widest">
+                  <span className="w-2 h-2 bg-[#0047FF] animate-ping"></span> Fetching Records...
+                </div>
               ) : projects.length === 0 ? (
-                <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'12px', color:'#999' }}>Belum ada project.</p>
+                <div className="border-[3px] border-dashed border-gray-300 p-10 text-center">
+                  <span className="font-mono text-xs text-gray-500 uppercase tracking-widest">Database is empty</span>
+                </div>
               ) : (
-                <div style={{ display:'flex', flexDirection:'column', gap:'0' }}>
-                  {projects.map((p,i) => (
-                    <div key={p.id} style={{ padding:'1.25rem', border:'2.5px solid #0a0a0a', borderTop:i===0?'2.5px solid #0a0a0a':'none', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'1rem' }}>
-                      <div style={{ flex:1 }}>
-                        <p style={{ fontWeight:700, fontSize:'15px', marginBottom:'4px' }}>{p.title}</p>
-                        <p style={{ fontSize:'12px', color:'#666', marginBottom:'8px' }}>{p.description}</p>
-                        <div style={{ display:'flex', gap:'4px', flexWrap:'wrap' }}>
+                <div className="flex flex-col gap-4">
+                  {projects.map((p) => (
+                    <div key={p.id} className="bg-white border-[3px] border-black p-5 flex flex-col sm:flex-row gap-4 justify-between items-start hover:shadow-[6px_6px_0px_rgba(0,0,0,1)] transition-shadow group">
+                      <div className="flex-1">
+                        <h3 className="font-display text-xl uppercase tracking-wide mb-1 group-hover:text-[#0047FF] transition-colors">{p.title}</h3>
+                        <p className="font-mono text-xs text-gray-600 mb-4 leading-relaxed max-w-2xl">{p.description}</p>
+                        <div className="flex flex-wrap gap-2">
                           {(p.tags||[]).map(t => (
-                            <span key={t} style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'9px', padding:'2px 8px', border:'1.5px solid #0a0a0a' }}>{t}</span>
+                            <span key={t} className="font-mono text-[9px] font-bold px-2 py-1 bg-gray-100 border-[2px] border-black uppercase tracking-widest">
+                              {t}
+                            </span>
                           ))}
                         </div>
                       </div>
-                      <button onClick={()=>deleteProject(p.id)} style={{ padding:'6px 12px', background:'#fff', border:'2px solid #0a0a0a', fontFamily:'JetBrains Mono, monospace', fontSize:'10px', fontWeight:700, textTransform:'uppercase', cursor:'pointer', flexShrink:0 }}>
+                      <button onClick={() => deleteProject(p.id)} className="w-full sm:w-auto mt-4 sm:mt-0 border-[3px] border-black bg-white text-black px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors">
                         Delete
                       </button>
                     </div>
                   ))}
                 </div>
               )}
-            </>
-          )}
-          {tab === 'blog' && (
-            <div>
-              <h2 style={{ fontFamily:'Bebas Neue, sans-serif', fontSize:'24px', letterSpacing:'1px', marginBottom:'1rem' }}>MANAGE BLOG</h2>
-              <p style={{ fontSize:'13px', color:'#666', lineHeight:1.7, maxWidth:'480px' }}>
-                Blog posts dikelola lewat file MDX di repository GitHub lo. Push file baru = artikel baru. Edit file = artikel terupdate. Delete file = artikel hilang.
-              </p>
             </div>
           )}
+
+          {tab === 'blog' && (
+            <div className="animate-fade-up-1">
+               <div className="font-mono text-gray-500 text-[10px] font-bold tracking-[0.3em] uppercase mb-2">
+                // Log Index
+              </div>
+              <h2 className="font-display text-3xl uppercase tracking-tight mb-6">Management Logs</h2>
+              <div className="border-[3px] border-black bg-white p-8">
+                <p className="font-mono text-sm text-gray-700 leading-relaxed max-w-2xl">
+                  Log entries are currently handled via headless Git-based CMS. 
+                  <br/><br/>
+                  To edit or delete logs, modify the source Markdown files in your IDE and push the changes. The Next.js compiler handles static generation automatically.
+                </p>
+              </div>
+            </div>
+          )}
+
         </div>
-      </div>
+      </main>
     </div>
   )
 }
